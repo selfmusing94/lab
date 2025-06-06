@@ -1,0 +1,241 @@
+																						PROGRAM-01
+
+SHOW DATABASES;
+CREATE DATABASE ai403_test1;
+USE ai403_test1;
+
+CREATE TABLE Employee (
+    EMPNO INT,
+    ENAME VARCHAR(50),
+    JOB VARCHAR(50),
+    MANAGER_NO INT,
+    SAL DECIMAL(10,2),
+    COMMISION DECIMAL(10,2)
+);
+
+desc Employee;
+
+CREATE USER Employee_MS IDENTIFIED BY '24megha!';
+GRANT ALL PRIVILEGES ON Employee TO employee_MS; 
+
+
+START TRANSACTION;
+
+INSERT INTO Employee(EMPNO,ENAME,JOB,MANAGER_NO,SAL,COMMISION) VALUES
+(1,'John Doe','Manager',NULL,5000.00,NULL),
+(2,'Jane Smith','Developer',1,4000.00,500.00),
+(3,'Michael Johnson','Analyst',1,4500.00,NULL);
+
+SELECT * FROM Employee;
+
+ROLLBACK;
+
+ALTER TABLE Employee
+ADD CONSTRAINT PK_Employee_EMPNO PRIMARY KEY (EMPNO);
+
+ALTER TABLE Employee MODIFY EMPNO INT NOT NULL;
+
+ALTER TABLE Employee MODIFY ENAME VARCHAR(50) NOT NULL;
+
+ALTER TABLE Employee MODIFY JOB VARCHAR(50) NOT NULL;
+
+ALTER TABLE Employee MODIFY SAL DECIMAL(10,2) NOT NULL;
+
+desc Employee;
+
+INSERT INTO Employee(EMPNO,ENAME,JOB,SAL) VALUES
+(4,'Alice Johnson',NULL,6000.00);
+
+
+===========================================================================================================================================================================
+
+																						PROGRAM-02
+
+CREATE TABLE EMPLOYEE1 (
+	EMPNO INT PRIMARY KEY,
+    ENAME VARCHAR(50),
+    JOB VARCHAR(50),
+    MGR INT,
+    SAL DECIMAL(10,2)
+);
+
+desc EMPLOYEE1;
+
+ALTER TABLE EMPLOYEE1
+ADD COMMISSION DECIMAL(10,2);
+
+desc EMPLOYEE1;
+
+INSERT INTO EMPLOYEE1(EMPNO,ENAME,JOB,MGR,SAL) VALUES 
+(101,'John','Manager',100,5000.00),
+(102,'Alice','Developer',101,4000.00),
+(103,'Bob','Analyst',101,4500.00),
+(104,'Emma','Designer',101,4800.00),
+(105,'Michael','Salesperson',101,3500.00);
+
+ 
+
+UPDATE EMPLOYEE1
+SET JOB = 'Sales Manager'
+WHERE EMPNO = 105;
+
+ALTER TABLE EMPLOYEE1
+RENAME COLUMN MGR TO MANAGER_NO;
+
+or ( ALTER TABLE EMPLOYEE1
+CHANGE MGR MANAGER_NO INT; )
+
+
+DELETE FROM EMPLOYEE1
+WHERE EMPNO = 105;
+
+===========================================================================================================================================================================
+
+																						PROGRAM-03
+
+create database ai403_test3;
+use ai403_test3;
+
+CREATE TABLE employee3(e_id INT PRIMARY KEY,
+	e_name VARCHAR(50),
+    age INT,
+    salary DECIMAL(10,2));
+    
+DESC employee3;
+     
+INSERT INTO employee3(e_id,e_name,age,salary) VALUES (1,'john',30,5000.00),(2,'alice',35,6000.00),(3,'bob',28,4500.00),(4,'michel',40,7000.00),(5,'emma',32,5500.00);
+   
+SELECT * FROM employee3;
+SELECT COUNT(e_name) FROM employee3;
+    
+SELECT MIN(age) FROM employee3;
+    
+SELECT MAX(age) as Maximum_age FROM employee3;
+    
+SELECT salary FROM employee3 ORDER BY salary DESC;
+or ( SELECT salary FROM employee3 ORDER BY salary ASC; )
+    
+SELECT salary,COUNT(*) AS employee_count FROM Employee3 GROUP BY salary;
+
+INSERT INTO employee3(e_id,e_name,age,salary) VALUES (7,'darshan',19,6000.00);
+
+
+
+===========================================================================================================================================================================
+				
+																						PROGRAM-04
+create database ai403_test4;
+
+use ai403_test4;
+
+create table customer(
+id int primary key,
+name varchar(100),
+age int,
+address varchar(255),
+salary decimal(10,2)
+);
+
+desc customer;
+
+create table salary_changes_log(
+change_id int auto_increment primary key,
+change_type varchar(50),
+old_salary decimal(10,2),
+new_salary decimal(10,2),
+change_timestamp timestamp default current_timestamp
+);
+
+desc salary_changes_log;
+
+DELIMITER //
+create trigger tr_customer_insert
+after insert on customer for each row
+begin
+insert into salary_changes_log (change_type,old_salary,new_salary) values ('INSERT',NULL,new.salary);
+end //
+delimiter ;
+
+DELIMITER //
+create trigger tr_customer_update
+after update on customer for each row
+begin
+insert into salary_changes_log (change_type,old_salary,new_salary) values ('UPDATE',old.salary,new.salary);
+end //
+DELIMITER ;
+
+DELIMITER //
+create trigger tr_customer_delete
+after delete on customer for each row
+begin
+insert into salary_changes_log (change_type,old_salary,new_salary) values ('DELETE',old.salary,NULL);
+end //
+DELIMITER ;
+
+insert into customer (id,name,age,address,salary) values (2,'bob',25,'123 boston',50000.00);
+
+update customer set salary = 55000.00 where id = 2;
+
+delete from customer where id = 2;
+
+select * from salary_changes_log;
+
+select * from customer;
+===========================================================================================================================================================================
+
+
+																						PROGRAM-05
+
+create database ai403_test5;
+
+use ai403_test5;
+
+create table employee (
+E_id int primary key,
+E_name varchar(100),
+Age int,
+Salary decimal(10,2)
+);
+
+insert into employee (E_id,E_name,age,salary)values
+(1,'Alice',30,60000.00),
+(2,'Bob',25,50000.00),
+(3,'Charlie',35,70000.00),
+(4,'David',28,55000.00);
+
+select * from employee;
+
+DELIMITER //
+
+create procedure ExtractEmployeeData()
+begin
+declare V_E_id int;
+declare V_E_name varchar(100);
+declare V_Age int;
+declare V_Salary decimal(10,2);
+declare done int default 0;
+
+DECLARE emp_cursor cursor for select E_id, E_name,Age,Salary from employee;
+
+declare continue handler for not found set done =1;
+
+open emp_cursor;
+
+read_loop : LOOP
+fetch emp_cursor into V_E_id,V_E_Name,V_Age,V_Salary;
+
+if done then
+leave read_loop;
+end if;
+
+select V_E_id AS E_id, V_E_name AS E_name, V_Age as Age, V_Salary as Salary;
+
+end loop read_loop;
+close emp_cursor;
+
+end //
+
+call ExtractEmployeeData() //
+
+
+===========================================================================================================================================================================
